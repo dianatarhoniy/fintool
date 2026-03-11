@@ -1,0 +1,6 @@
+fin website.pl -flag
+flags:
+-o -> outputs list of open endpoints
+-d -> double-spending vulnerability detection
+-
+
