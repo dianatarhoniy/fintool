@@ -2,5 +2,9 @@ fin website.pl -flag
 flags:
 -o -> outputs list of open endpoints
 -d -> double-spending vulnerability detection
--
-
+-all run all tests
+-s session issues
+-z detect authorization issues (access other user's data?)
+-u username/credentials to use (e.g. -u admin:admin)
+-t target account number (e.g. -t 800001)
+-v verbose mode (show full responses)
