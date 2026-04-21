@@ -21,7 +21,7 @@ class Auth:
         response = self.client.get("/logout.jsp")
         return response
 
-    def get_balance(self, account="800001"):
+    def get_balance(self, account="800002"):
         response = self.client.get(f"/bank/showAccount?listAccounts={account}")
         if "Balance Detail" in response.text:
             match = re.search(r'Ending balance.*?<td align="right">(.*?)</td>', response.text, re.DOTALL)
