@@ -1,6 +1,5 @@
 import re
 
-
 class IDOR:
     def __init__(self, client, auth):
         self.client = client
