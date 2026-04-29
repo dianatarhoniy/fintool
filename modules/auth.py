@@ -1,20 +1,39 @@
 import re
+
+from urllib3.util.connection import allowed_gai_family
+
+
 class Auth:
     def __init__(self,client,username,password):
         self.client = client
         self.username = username
         self.password = password
+        self.headers = None
     def login(self):
         print(f"Attempting login as {self.username}...")
         response = self.client.post("/doLogin", data =
         {"uid": self.username,
          "passw": self.password,
-         "btnSubmit": "Login" })
+         "btnSubmit": "Login"
+         },
+         allow_redirects=False)
 
-        if "Sign Off" in response.text:
-            return True
-        else:
+        self.headers = response.headers.get("Set-Cookie", "")
+
+        if response.status_code == 302:
+            location = response.headers.get("Location","/bank/main.jsp")
+            if location.startswith("/altoromutual"):
+                location = location.replace("/altoromutual", "", 1)
+            dashboard = self.client.get(location)
+            if "Sign Off" in dashboard.text:
+                print("[AUTH] Login successful.")
+                return True
+
+            print("[AUTH] Login failed.")
             return False
+
+
+
 
     def logout(self):
         print(f"Attempting logout as {self.username}...")

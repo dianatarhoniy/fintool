@@ -10,11 +10,12 @@ class HttpClient:
         print(f"[GET] {url} -> {response.status_code}")
         return response
 
-    def post(self, path, data):
+    def post(self, path, data, **kwargs):
         url = self.url + path
-        response = self.session.post(url, data=data)
+        response = self.session.post(url, data=data, **kwargs)
         print(f"[POST] {url} -> {response.status_code}")
         return response
+
     def get_cookies(self):
         return dict(self.session.cookies)
 
