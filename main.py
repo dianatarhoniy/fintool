@@ -8,20 +8,23 @@ from modules.auth import Auth
 from modules.endpoint_discovery import EndpointDiscovery
 from modules.idor import IDOR
 from modules.session import SessionTesting
+from modules.sqli import SQLInjection
 
 # discovery = EndpointDiscovery("https://demo.testfire.net")
 # discovery.search()
 client = HttpClient("http://localhost:8080/altoromutual")
 auth = Auth(client, "jsmith", "demo1234")
 
-login_success = auth.login()
-print("Logged in:", login_success)
-print(client.get_cookies())
-session = SessionTesting(client,auth)
-session.check_flags()
-
-session.check_data_leaks()
-session.check_session_after_logout()
+# login_success = auth.login()
+# print("Logged in:", login_success)
+# print(client.get_cookies())
+# session = SessionTesting(client,auth)
+# session.check_flags()
+#
+# session.check_data_leaks()
+# session.check_session_after_logout()
+sqli = SQLInjection(client)
+sqli.run()
 
 #balance = auth.get_balance()
 
