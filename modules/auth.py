@@ -17,7 +17,7 @@ class Auth:
          },
          allow_redirects=False)
 
-        self.header = response.headers.get("Set-Cookie", "")
+        self.header = response.raw.headers.getlist("Set-Cookie")
 
         if response.status_code == 302:
             location = response.headers.get("Location", "/bank/main.jsp")
@@ -29,6 +29,8 @@ class Auth:
                 return True
 
             print("[AUTH] Login failed.")
+            return False
+        else:
             return False
 
 

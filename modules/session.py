@@ -9,18 +9,11 @@ class SessionTesting:
     def check_flags(self):
         print("\n[1] Checking cookie security flags...")
 
-        raw = self.auth.header
-        if not raw:
+        cookies = self.auth.header
+        if not cookies:
             print("    [ERROR] No Set-Cookie header captured")
             return
-
-        print(f"    Raw header: {raw}\n")
-
-        # Each cookie is separated by ", "
-        cookies = raw.split(", ")
-
         for cookie in cookies:
-            # Get just the name before the first "="
             name = cookie.split("=")[0].strip()
             cookie_lower = cookie.lower()
 
