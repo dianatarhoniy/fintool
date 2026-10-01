@@ -1,13 +1,15 @@
 import requests
+
 class HttpClient:
-    def __init__(self, url):
+    def __init__(self, url, timeout=10):
         self.url = url
+        self.timeout = timeout
         self.session = requests.Session()
 
-    def get(self, path,**kwargs):
+    def get(self, path, **kwargs):
         url = self.url + path
         kwargs.setdefault("timeout", self.timeout)
-        response = self.session.get(url,**kwargs)
+        response = self.session.get(url, **kwargs)
         print(f"[GET] {url} -> {response.status_code}")
         return response
 
@@ -20,5 +22,3 @@ class HttpClient:
 
     def get_cookies(self):
         return dict(self.session.cookies)
-
-

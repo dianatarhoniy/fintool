@@ -48,7 +48,7 @@ class SessionTesting:
             print(f"    Value: {value[:30]}")
 
             try:
-                decoded = base64.b64decode(value).decode()
+                decoded = base64.b64decode(value, validate=True).decode("utf-8")
                 print(f" Decoded cookie: {decoded}")
                 if re.search(r'\d{6,}', decoded):
                     print(f"    [VULNERABLE]       Account number leak present")
@@ -64,6 +64,9 @@ class SessionTesting:
 
         # Step 1 - save the session ID before logout
         old_jsessionid = self.client.get_cookies().get("JSESSIONID")
+        if not old_jsessionid:
+            print("    [ERROR] No JSESSIONID found before logout")
+            return
         print(f"    Session ID before logout: {old_jsessionid}")
 
         # Step 2 - logout
