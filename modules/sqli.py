@@ -8,6 +8,35 @@ class SQLInjection:
     def try_login(self, payload):
         success, _ = attempt_login(self.client, payload, "anything")
         return success
+    def check_error_based(self):
+        print("\n--- Error-based SQL Injection Testing ---")
+
+        sql_errors = [
+            "sqlexception",
+            "syntax error",
+            "unclosed quotation",
+            "ora-",
+            "you have an error in your sql syntax",
+            "odbc",
+            "sql server",
+        ]
+
+        fields = ["uid", "passw"]
+        vulnerable_fields = []
+
+        for field in fields:
+            data = {"uid": "test", "passw": "test", "btnSubmit": "Login"}
+            data[field] = "'"
+            response = self.client.post("/doLogin", data=data)
+            body = response.text.lower()
+
+            if any(error in body for error in sql_errors):
+                print(f"    [VULNERABLE] SQL error triggered in field: {field}")
+                vulnerable_fields.append(field)
+            else:
+                print(f"    [SAFE]       No SQL error in field: {field}")
+
+        return vulnerable_fields
 
     def run(self):
         print("\n--- SQL Injection Testing ---")
@@ -34,5 +63,5 @@ class SQLInjection:
         print(f"\n[SUMMARY] {len(vulnerable_payloads)}/{len(payloads)} payloads bypassed login")
         if vulnerable_payloads:
             print("    SQL injection vulnerability confirmed on login form!")
-
+        self.check_error_based()
         print("\n--- SQL Injection Testing Complete ---")
