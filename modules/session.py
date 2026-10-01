@@ -14,22 +14,27 @@ class SessionTesting:
             print("    [ERROR] No Set-Cookie header captured")
             return
         for cookie in cookies:
-            name = cookie.split("=")[0].strip()
-            cookie_lower = cookie.lower()
+            parts = [part.strip() for part in cookie.split(";")]
+            name = parts[0].split("=")[0].strip()
+            attributes = [part.lower() for part in parts[1:]]
+
+            has_httponly = "httponly" in attributes
+            has_secure = "secure" in attributes
+            has_samesite = any(part.startswith("samesite") for part in attributes)
 
             print(f"    Cookie: {name}")
 
-            if "httponly" in cookie_lower:
+            if has_httponly:
                 print(f"        [SAFE]       HttpOnly present")
             else:
                 print(f"        [VULNERABLE] Missing HttpOnly - JavaScript can steal this cookie")
 
-            if "secure" in cookie_lower:
+            if has_secure:
                 print(f"        [SAFE]       Secure present")
             else:
                 print(f"        [VULNERABLE] Missing Secure - sent over plain HTTP")
 
-            if "samesite" in cookie_lower:
+            if has_samesite:
                 print(f"        [SAFE]       SameSite present")
             else:
                 print(f"        [VULNERABLE] Missing SameSite - CSRF attacks possible")
@@ -78,9 +83,3 @@ class SessionTesting:
             print("    An attacker who stole this cookie can still access the account.")
         else:
             print("    [SAFE] Session correctly invalidated after logout.")
-
-
-
-
-
-
