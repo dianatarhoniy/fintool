@@ -1,6 +1,28 @@
 import re
 
 
+def attempt_login(client, uid, passw):
+    response = client.post(
+        "/doLogin",
+        data={
+            "uid": uid,
+            "passw": passw,
+            "btnSubmit": "Login"
+        },
+        allow_redirects=False
+    )
+    set_cookie_headers = response.raw.headers.getlist("Set-Cookie")
+
+    if response.status_code != 302:
+        return False, set_cookie_headers
+
+    location = response.headers.get("Location", "/bank/main.jsp")
+    if location.startswith("/altoromutual"):
+        location = location.replace("/altoromutual", "", 1)
+
+    dashboard = client.get(location)
+    return "Sign Off" in dashboard.text, set_cookie_headers
+
 
 class Auth:
     def __init__(self,client,username,password):
@@ -8,30 +30,15 @@ class Auth:
         self.username = username
         self.password = password
         self.header = None
+
     def login(self):
         print(f"Attempting login as {self.username}...")
-        response = self.client.post("/doLogin", data =
-        {"uid": self.username,
-         "passw": self.password,
-         "btnSubmit": "Login"
-         },
-         allow_redirects=False)
-
-        self.header = response.raw.headers.getlist("Set-Cookie")
-
-        if response.status_code == 302:
-            location = response.headers.get("Location", "/bank/main.jsp")
-            if location.startswith("/altoromutual"):
-                location = location.replace("/altoromutual", "", 1)
-            dashboard = self.client.get(location)
-            if "Sign Off" in dashboard.text:
-                print("[AUTH] Login successful.")
-                return True
-
-            print("[AUTH] Login failed.")
-            return False
+        success, self.header = attempt_login(self.client, self.username, self.password)
+        if success:
+            print("[AUTH] Login successful.")
         else:
-            return False
+            print("[AUTH] Login failed.")
+        return success
 
 
     def logout(self):

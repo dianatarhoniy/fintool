@@ -1,27 +1,13 @@
+from modules.auth import attempt_login
+
+
 class SQLInjection:
     def __init__(self, client):
         self.client = client
 
     def try_login(self, payload):
-        response = self.client.post(
-            "/doLogin",
-            data={
-                "uid": payload,
-                "passw": "anything",
-                "btnSubmit": "Login"
-            },
-            allow_redirects=False
-        )
-
-
-        if response.status_code == 302:
-            location = response.headers.get("Location", "/bank/main.jsp")
-            if location.startswith("/altoromutual"):
-                location = location.replace("/altoromutual", "", 1)
-            dashboard = self.client.get(location)
-            if "Sign Off" in dashboard.text:
-                return True
-        return False
+        success, _ = attempt_login(self.client, payload, "anything")
+        return success
 
     def run(self):
         print("\n--- SQL Injection Testing ---")
