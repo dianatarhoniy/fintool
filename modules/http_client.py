@@ -4,14 +4,16 @@ class HttpClient:
         self.url = url
         self.session = requests.Session()
 
-    def get(self, path):
+    def get(self, path,**kwargs):
         url = self.url + path
-        response = self.session.get(url)
+        kwargs.setdefault("timeout", self.timeout)
+        response = self.session.get(url,**kwargs)
         print(f"[GET] {url} -> {response.status_code}")
         return response
 
     def post(self, path, data, **kwargs):
         url = self.url + path
+        kwargs.setdefault("timeout", self.timeout)
         response = self.session.post(url, data=data, **kwargs)
         print(f"[POST] {url} -> {response.status_code}")
         return response

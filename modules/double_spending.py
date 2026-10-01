@@ -23,6 +23,9 @@ class DoubleSpending():
         self.results = []
 
         balance_before = self.auth.get_balance()
+        if balance_before is None:
+            print("[DOUBLE SPENDING] Could not read starting balance - aborting test.")
+            return
         before = float(balance_before.replace("$", "").replace(",", "").strip())
 
         # Fire many transfers simultaneously
@@ -37,6 +40,10 @@ class DoubleSpending():
             t.join()
 
         balance_after = self.auth.get_balance()
+        if balance_after is None:
+            print("[DOUBLE SPENDING] Could not read balance - aborting test.")
+            return
+
         after = float(balance_after.replace("$", "").replace(",", "").strip())
 
         delta = round(before - after, 2)
