@@ -5,6 +5,7 @@ from modules.double_spending import DoubleSpending
 from modules.idor import IDOR
 from modules.session import SessionTesting
 from modules.sqli import SQLInjection
+from modules.endpoint_discovery import EndpointDiscovery
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -17,8 +18,12 @@ def parse_args():
                         help="Username (default: jsmith)")
     parser.add_argument("--password", default="demo1234",
                         help="Password (default: demo1234)")
+    parser.add_argument("--wordlist", default="wordlists/common.txt",
+                        help="Wordlist for endpoint discovery (default: wordlists/common.txt)")
 
     # Flow flags
+    parser.add_argument("--discover", action="store_true",
+                        help="Run endpoint discovery")
     parser.add_argument("--all", action="store_true",
                         help="Run all flows")
     parser.add_argument("--sqli", action="store_true",
@@ -40,6 +45,10 @@ def main():
     print(f"  Target: {args.target}")
     print(f"{'='*50}\n")
 
+    if args.discover or args.all:
+        discovery = EndpointDiscovery(args.target, args.wordlist)
+        discovery.search()
+
     if args.sqli or args.all:
         client = HttpClient(args.target)
         sqli = SQLInjection(client)
@@ -52,6 +61,7 @@ def main():
     if not login_success:
         print("[ERROR] Login failed - cannot run authenticated flows")
         return
+
 
     if args.idor or args.all:
         idor = IDOR(client, auth)
