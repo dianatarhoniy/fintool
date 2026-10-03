@@ -1,13 +1,17 @@
 from modules.auth import attempt_login
+from modules.http_client import HttpClient
 
 
 class SQLInjection:
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, target):
+        self.target = target
 
     def try_login(self, payload):
-        success, _ = attempt_login(self.client, payload, "anything")
+        client = HttpClient(self.target)
+        success, _ = attempt_login(client, payload, "anything")
         return success
+
+
     def check_error_based(self):
         print("\n--- Error-based SQL Injection Testing ---")
 
@@ -25,9 +29,10 @@ class SQLInjection:
         vulnerable_fields = []
 
         for field in fields:
+            client = HttpClient(self.target)
             data = {"uid": "test", "passw": "test", "btnSubmit": "Login"}
             data[field] = "'"
-            response = self.client.post("/doLogin", data=data)
+            response = client.post("/doLogin", data=data)
             body = response.text.lower()
 
             if any(error in body for error in sql_errors):

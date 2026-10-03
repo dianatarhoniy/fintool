@@ -3,6 +3,7 @@ from modules.http_client import HttpClient
 from modules.auth import Auth
 from modules.double_spending import DoubleSpending
 from modules.idor import IDOR
+from modules.reporter import Reporter
 from modules.session import SessionTesting
 from modules.sqli import SQLInjection
 from modules.endpoint_discovery import EndpointDiscovery
@@ -45,13 +46,14 @@ def main():
     print(f"  Target: {args.target}")
     print(f"{'='*50}\n")
 
+    all_findings = []
+
     if args.discover or args.all:
         discovery = EndpointDiscovery(args.target, args.wordlist)
         discovery.search()
 
     if args.sqli or args.all:
-        client = HttpClient(args.target)
-        sqli = SQLInjection(client)
+        sqli = SQLInjection(args.target)
         sqli.run()
 
     client = HttpClient(args.target)
@@ -65,7 +67,7 @@ def main():
 
     if args.idor or args.all:
         idor = IDOR(client, auth)
-        idor.run()
+        all_findings += idor.run()
 
     if args.session or args.all:
         session = SessionTesting(client, auth)
@@ -81,6 +83,9 @@ def main():
         auth.login()
         ds = DoubleSpending(client, auth)
         ds.run()
+    reporter = Reporter(all_findings)
+    reporter.write_json("report.json")
+
 
     print(f"\n{'='*50}")
     print(f"  Scan Complete")

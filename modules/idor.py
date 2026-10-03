@@ -1,5 +1,8 @@
 import re
 
+from modules.finding import Finding
+
+
 class IDOR:
     def __init__(self, client, auth):
         self.client = client
@@ -22,7 +25,7 @@ class IDOR:
         print(f"Testing access to other accounts...\n")
 
         accounts_to_test = ["800001", "800002", "800003", "800004", "800005"]
-        vulnerable = []
+        findings = []
 
         for account_id in accounts_to_test:
             accessible, balance = self.check_account(account_id)
@@ -31,8 +34,22 @@ class IDOR:
                 print(f"[OWN ACCOUNT] Account {account_id} - accessible (expected)")
             elif accessible:
                 print(f"[VULNERABLE]  Account {account_id} - ACCESSIBLE, balance leaked: {balance}")
-                vulnerable.append(account_id)
+                findings.append(Finding(
+                    check="IDOR",
+                    severity="HIGH",
+                    title=f"Unauthorized access to account {account_id}",
+                    evidence=f"account {account_id} is accessible while logged in as jsmith;"
+                             f" balance leaked: {balance}"
+                ))
             else:
                 print(f"[SAFE]        Account {account_id} - not accessible")
 
-        print(f"\n[SUMMARY] {len(vulnerable)} unauthorized accounts exposed: {vulnerable}")
+        print(f"\n[SUMMARY] {len(findings)} unauthorized accounts exposed.")
+        if not findings:
+            findings.append(Finding(
+                check="IDOR",
+                severity="SAFE",
+                title="No IDOR vulnerabilities found",
+                evidence="All other accounts denied access"
+            ))
+        return findings
