@@ -1,4 +1,8 @@
 import threading
+
+from modules.finding import Finding
+
+
 class DoubleSpending():
     def __init__(self, client,auth):
         self.client = client
@@ -21,11 +25,12 @@ class DoubleSpending():
     def run(self, sender="800002", receiver="800003", amount="100", threads=10):
         print(f"Starting Double Spending detection with {threads} concurrent threads...")
         self.results = []
+        findings = []
 
         balance_before = self.auth.get_balance()
         if balance_before is None:
             print("[DOUBLE SPENDING] Could not read starting balance - aborting test.")
-            return
+            return findings
         before = float(balance_before.replace("$", "").replace(",", "").strip())
 
         # Fire many transfers simultaneously
@@ -42,7 +47,7 @@ class DoubleSpending():
         balance_after = self.auth.get_balance()
         if balance_after is None:
             print("[DOUBLE SPENDING] Could not read balance - aborting test.")
-            return
+            return findings
 
         after = float(balance_after.replace("$", "").replace(",", "").strip())
 
@@ -63,5 +68,18 @@ class DoubleSpending():
             times = round(delta / expected)
             print(f"\nVULNERABILITY DETECTED - Balance dropped {times}x the transfer amount!")
             print(f"Server processed {times} out of {threads} concurrent transfers.")
+            findings.append(Finding(
+                check="Double Spending",
+                severity="HIGH",
+                title="Race condition allows duplicate transfers",
+                evidence=f"{threads} concurrent transfers of ${amount} caused a ${delta} deduction ({times}x expected)"
+            ))
         else:
             print(f"\nSAFE - Balance only dropped once despite {threads} concurrent requests.")
+            findings.append(Finding(
+                check="Double Spending",
+                severity="SAFE",
+                title="No double-spending detected",
+                evidence=f"Balance dropped ${delta} after {threads} concurrent transfers (expected ${expected})"
+            ))
+        return findings

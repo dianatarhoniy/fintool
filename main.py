@@ -82,7 +82,8 @@ def main():
         auth = Auth(client, args.username, args.password)
         auth.login()
         ds = DoubleSpending(client, auth)
-        ds.run()
+        all_findings += (
+            ds.run())
     reporter = Reporter(all_findings)
     reporter.write_json("report.json")
 
