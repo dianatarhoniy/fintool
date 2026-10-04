@@ -4,12 +4,15 @@ from modules.finding import Finding
 
 
 class IDOR:
-    def __init__(self, client, auth):
+    def __init__(self, client, auth,config):
         self.client = client
         self.auth = auth
+        self.config = config
 
     def check_account(self, account_id):
-        response = self.client.get(f"/bank/showAccount?listAccounts={account_id}")
+        path = self.config["path"]
+        param = self.config["param"]
+        response = self.client.get(f"{path}?{param}={account_id}")
 
         if f"Account History - {account_id}" in response.text:
             match = re.search(r'Ending balance.*?<td align="right">(.*?)</td>',
@@ -19,12 +22,13 @@ class IDOR:
 
         return False, None
 
-    def run(self, own_account="800002"):
+    def run(self):
+        own_account  = self.config["own_account"]
+        accounts_to_test = self.config["accounts_to_test"]
         print("\n--- IDOR Detection ---")
         print(f"Logged in as: jsmith (owns account {own_account})")
         print(f"Testing access to other accounts...\n")
 
-        accounts_to_test = ["800001", "800002", "800003", "800004", "800005"]
         findings = []
 
         for account_id in accounts_to_test:

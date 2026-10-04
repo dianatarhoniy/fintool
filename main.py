@@ -7,11 +7,14 @@ from modules.reporter import Reporter
 from modules.session import SessionTesting
 from modules.sqli import SQLInjection
 from modules.endpoint_discovery import EndpointDiscovery
+from modules.config import load_profile
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Security testing tool for banking web applications"
     )
+    parser.add_argument("--profile", default="profiles/altoromutual.yaml",
+                        help="Target profile (default: profiles/altoromutual.yaml)")
 
     parser.add_argument("--target", default="http://localhost:8080/altoromutual",
                         help="Target URL (default: http://localhost:8080/altoromutual)")
@@ -41,10 +44,12 @@ def parse_args():
 def main():
     args = parse_args()
 
+
     print(f"\n{'='*50}")
     print(f"  Banking Security Scanner")
     print(f"  Target: {args.target}")
     print(f"{'='*50}\n")
+    profile = load_profile(args.profile)
 
     all_findings = []
 
@@ -66,7 +71,7 @@ def main():
 
 
     if args.idor or args.all:
-        idor = IDOR(client, auth)
+        idor = IDOR(client, auth,profile["idor"])
         all_findings += idor.run()
 
     if args.session or args.all:

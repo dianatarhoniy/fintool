@@ -1,0 +1,5 @@
+idor:
+  path: /bank/showAccount
+  param: listAccounts
+  own_account: "800002"
+  accounts_to_test: ["800001", "800002", "800003", "800004", "800005"]
