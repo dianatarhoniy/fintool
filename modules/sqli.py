@@ -1,4 +1,5 @@
 from modules.auth import attempt_login
+from modules.finding import Finding
 from modules.http_client import HttpClient
 
 
@@ -26,7 +27,7 @@ class SQLInjection:
         ]
 
         fields = ["uid", "passw"]
-        vulnerable_fields = []
+        findings = []
 
         for field in fields:
             client = HttpClient(self.target)
@@ -37,11 +38,16 @@ class SQLInjection:
 
             if any(error in body for error in sql_errors):
                 print(f"    [VULNERABLE] SQL error triggered in field: {field}")
-                vulnerable_fields.append(field)
+                findings.append(Finding(
+                    check="SQLi",
+                    severity="HIGH",
+                    title=f"Error-based SQL injection in field: {field}",
+                    evidence=f"A single quote in the {field} field triggered a database error in the response"
+                ))
             else:
                 print(f"    [SAFE]       No SQL error in field: {field}")
 
-        return vulnerable_fields
+        return findings
 
     def run(self):
         print("\n--- SQL Injection Testing ---")
@@ -54,19 +60,34 @@ class SQLInjection:
             "' OR 1=1--",
         ]
 
-        vulnerable_payloads = []
+        bypass_findings = []
 
         for payload in payloads:
             success = self.try_login(payload)
 
             if success:
                 print(f"    [VULNERABLE] Login bypassed with: {payload}")
-                vulnerable_payloads.append(payload)
+                bypass_findings.append(Finding(
+                    check="SQLi",
+                    severity="HIGH",
+                    title="Login bypass via SQL injection",
+                    evidence=f"Payload {payload} bypassed the login form (302 + authenticated page)"
+                ))
             else:
                 print(f"    [SAFE]       Did not work: {payload}")
 
-        print(f"\n[SUMMARY] {len(vulnerable_payloads)}/{len(payloads)} payloads bypassed login")
-        if vulnerable_payloads:
+        print(f"\n[SUMMARY] {len(bypass_findings)}/{len(payloads)} payloads bypassed login")
+        if bypass_findings:
             print("    SQL injection vulnerability confirmed on login form!")
-        self.check_error_based()
+        findings = bypass_findings + self.check_error_based()
+
+        if not findings:
+            findings.append(Finding(
+                check="SQLi",
+                severity="SAFE",
+                title="No SQL injection found",
+                evidence="No payload bypassed login and no database errors were triggered"
+            ))
+
         print("\n--- SQL Injection Testing Complete ---")
+        return findings

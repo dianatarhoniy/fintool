@@ -54,7 +54,7 @@ def main():
 
     if args.sqli or args.all:
         sqli = SQLInjection(args.target)
-        sqli.run()
+        all_findings += sqli.run()
 
     client = HttpClient(args.target)
     auth = Auth(client, args.username, args.password)
