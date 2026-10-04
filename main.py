@@ -71,9 +71,7 @@ def main():
 
     if args.session or args.all:
         session = SessionTesting(client, auth)
-        session.check_flags()
-        session.check_data_leaks()
-        session.check_session_after_logout()
+        all_findings += session.run()
 
 
     if args.double_spending or args.all:
