@@ -1,0 +1,104 @@
+[
+  {
+    "check": "SQLi",
+    "severity": "HIGH",
+    "title": "Login bypass via SQL injection",
+    "evidence": "Payload ' OR '1'='1'-- bypassed the login form (302 + authenticated page)"
+  },
+  {
+    "check": "SQLi",
+    "severity": "HIGH",
+    "title": "Login bypass via SQL injection",
+    "evidence": "Payload admin'-- bypassed the login form (302 + authenticated page)"
+  },
+  {
+    "check": "SQLi",
+    "severity": "HIGH",
+    "title": "Login bypass via SQL injection",
+    "evidence": "Payload ' OR 1=1-- bypassed the login form (302 + authenticated page)"
+  },
+  {
+    "check": "SQLi",
+    "severity": "HIGH",
+    "title": "Error-based SQL injection in field: uid",
+    "evidence": "A single quote in the uid field triggered a database error in the response"
+  },
+  {
+    "check": "SQLi",
+    "severity": "HIGH",
+    "title": "Error-based SQL injection in field: passw",
+    "evidence": "A single quote in the passw field triggered a database error in the response"
+  },
+  {
+    "check": "IDOR",
+    "severity": "HIGH",
+    "title": "Unauthorized access to account 800001",
+    "evidence": "account 800001 is accessible while logged in as jsmith; balance leaked: $93933.44"
+  },
+  {
+    "check": "IDOR",
+    "severity": "HIGH",
+    "title": "Unauthorized access to account 800003",
+    "evidence": "account 800003 is accessible while logged in as jsmith; balance leaked: -$989065.61"
+  },
+  {
+    "check": "IDOR",
+    "severity": "HIGH",
+    "title": "Unauthorized access to account 800004",
+    "evidence": "account 800004 is accessible while logged in as jsmith; balance leaked: $10.00"
+  },
+  {
+    "check": "IDOR",
+    "severity": "HIGH",
+    "title": "Unauthorized access to account 800005",
+    "evidence": "account 800005 is accessible while logged in as jsmith; balance leaked: $25.00"
+  },
+  {
+    "check": "Session",
+    "severity": "MEDIUM",
+    "title": "Cookie JSESSIONID missing Secure flag",
+    "evidence": "Cookie JSESSIONID has no Secure attribute; can be sent over plain HTTP"
+  },
+  {
+    "check": "Session",
+    "severity": "MEDIUM",
+    "title": "Cookie JSESSIONID missing SameSite flag",
+    "evidence": "Cookie JSESSIONID has no SameSite attribute; vulnerable to CSRF"
+  },
+  {
+    "check": "Session",
+    "severity": "MEDIUM",
+    "title": "Cookie AltoroAccounts missing HttpOnly flag",
+    "evidence": "Cookie AltoroAccounts has no HttpOnly attribute; readable by JavaScript"
+  },
+  {
+    "check": "Session",
+    "severity": "MEDIUM",
+    "title": "Cookie AltoroAccounts missing Secure flag",
+    "evidence": "Cookie AltoroAccounts has no Secure attribute; can be sent over plain HTTP"
+  },
+  {
+    "check": "Session",
+    "severity": "MEDIUM",
+    "title": "Cookie AltoroAccounts missing SameSite flag",
+    "evidence": "Cookie AltoroAccounts has no SameSite attribute; vulnerable to CSRF"
+  },
+  {
+    "check": "Session",
+    "severity": "HIGH",
+    "title": "Account number leaked in cookie AltoroAccounts",
+    "evidence": "Cookie AltoroAccounts decodes to data containing an account number"
+  },
+  {
+    "check": "Session",
+    "severity": "HIGH",
+    "title": "Balance leaked in cookie AltoroAccounts",
+    "evidence": "Cookie AltoroAccounts decodes to data containing a balance amount"
+  },
+  {
+    "check": "Double Spending",
+    "severity": "SAFE",
+    "title": "No double-spending detected",
+    "evidence": "Balance dropped $100.0 after 10 concurrent transfers (expected $100.0)"
+  }
+]

@@ -4,12 +4,13 @@ from modules.http_client import HttpClient
 
 
 class SQLInjection:
-    def __init__(self, target):
+    def __init__(self, target, config):
         self.target = target
+        self.config = config
 
     def try_login(self, payload):
         client = HttpClient(self.target)
-        success, _ = attempt_login(client, payload, "anything")
+        success, _ = attempt_login(client, payload, "anything",self.config)
         return success
 
 
@@ -26,14 +27,20 @@ class SQLInjection:
             "sql server",
         ]
 
-        fields = ["uid", "passw"]
+        username_field = self.config["username_field"]
+        password_field = self.config["password_field"]
+        fields = [username_field, password_field]
         findings = []
 
         for field in fields:
             client = HttpClient(self.target)
-            data = {"uid": "test", "passw": "test", "btnSubmit": "Login"}
+            data = {
+                username_field: "test",
+                password_field: "test",
+                self.config["submit_field"]: self.config["submit_value"]
+            }
             data[field] = "'"
-            response = client.post("/doLogin", data=data)
+            response = client.post(self.config["path"], data=data)
             body = response.text.lower()
 
             if any(error in body for error in sql_errors):

@@ -1,5 +1,34 @@
+target: http://localhost:8080/altoromutual
+
+login:
+  path: /doLogin
+  username_field: uid
+  password_field: passw
+  submit_field: btnSubmit
+  submit_value: Login
+  success_marker: "Sign Off"
+  redirect_prefix: /altoromutual
+  default_landing: /bank/main.jsp
+  logout_path: /logout.jsp
+
 idor:
   path: /bank/showAccount
   param: listAccounts
   own_account: "800002"
   accounts_to_test: ["800001", "800002", "800003", "800004", "800005"]
+
+transfer:
+  path: /bank/doTransfer
+  from_field: fromAccount
+  to_field: toAccount
+  amount_field: transferAmount
+  submit_field: transfer
+  submit_value: Transfer Money
+  sender: "800002"
+  receiver: "800003"
+  amount: "100"
+
+session:
+  cookie_name: JSESSIONID
+  protected_page: /bank/main.jsp
+  success_marker: "Sign Off"

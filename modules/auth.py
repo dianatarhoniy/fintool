@@ -1,13 +1,13 @@
 import re
 
 
-def attempt_login(client, uid, passw):
+def attempt_login(client, uid, passw, config):
     response = client.post(
-        "/doLogin",
+        config["path"],
         data={
-            "uid": uid,
-            "passw": passw,
-            "btnSubmit": "Login"
+            config["username_field"]: uid,
+            config["password_field"]: passw,
+            config["submit_field"]: config["submit_value"]
         },
         allow_redirects=False
     )
@@ -16,24 +16,26 @@ def attempt_login(client, uid, passw):
     if response.status_code != 302:
         return False, set_cookie_headers
 
-    location = response.headers.get("Location", "/bank/main.jsp")
-    if location.startswith("/altoromutual"):
-        location = location.replace("/altoromutual", "", 1)
-
+    location = response.headers.get("Location", config["default_landing"])
+    prefix = config["redirect_prefix"]
+    if location.startswith(prefix):
+        location = location.replace(prefix, "", 1)
+    if not location.startswith("/"):
+        location = "/" + location
     dashboard = client.get(location)
-    return "Sign Off" in dashboard.text, set_cookie_headers
-
+    return config["success_marker"] in dashboard.text, set_cookie_headers
 
 class Auth:
-    def __init__(self,client,username,password):
+    def __init__(self,client,username,password,config):
         self.client = client
         self.username = username
         self.password = password
+        self.config = config
         self.header = None
 
     def login(self):
         print(f"Attempting login as {self.username}...")
-        success, self.header = attempt_login(self.client, self.username, self.password)
+        success, self.header = attempt_login(self.client, self.username, self.password,self.config)
         if success:
             print("[AUTH] Login successful.")
         else:
@@ -43,7 +45,7 @@ class Auth:
 
     def logout(self):
         print(f"Attempting logout as {self.username}...")
-        response = self.client.get("/logout.jsp")
+        response = self.client.get(self.config["logout_path"])
         return response
 
     def get_balance(self, account="800002"):

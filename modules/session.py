@@ -5,9 +5,10 @@ from modules.finding import Finding
 
 
 class SessionTesting:
-    def __init__(self,client,auth):
+    def __init__(self,client,auth,config):
         self.client = client
         self.auth = auth
+        self.config = config
 
     def check_flags(self):
         print("\n[1] Checking cookie security flags...")
@@ -102,7 +103,7 @@ class SessionTesting:
         findings = []
 
         # Step 1 - save the session ID before logout
-        old_jsessionid = self.client.get_cookies().get("JSESSIONID")
+        old_jsessionid = self.client.get_cookies().get(self.config["cookie_name"])
         if not old_jsessionid:
             print("    [ERROR] No JSESSIONID found before logout")
             return findings
@@ -113,14 +114,14 @@ class SessionTesting:
         print("    Logged out.")
 
         # Step 3 - put the old cookie back
-        self.client.session.cookies.set("JSESSIONID", old_jsessionid)
+        self.client.session.cookies.set(self.config["cookie_name"], old_jsessionid)
         print(f"    Replaying old session ID: {old_jsessionid}")
 
         # Step 4 - try to access a protected page
-        response = self.client.get("/bank/main.jsp")
+        response = self.client.get(self.config["protected_page"])
 
         # Step 5 - check if we got in
-        if "Sign Off" in response.text:
+        if self.config["success_marker"] in response.text:
             print("    [VULNERABLE] Old session still works after logout!")
             print("    An attacker who stole this cookie can still access the account.")
             findings.append(Finding(

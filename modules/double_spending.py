@@ -4,17 +4,18 @@ from modules.finding import Finding
 
 
 class DoubleSpending():
-    def __init__(self, client,auth):
+    def __init__(self, client,auth,config):
         self.client = client
         self.auth = auth
+        self.config = config
         self.results = []
         self.lock = threading.Lock()
     def send_transfer(self, sender, receiver, amount):
-        response = self.client.post("/bank/doTransfer", data={
-            "fromAccount": sender,
-            "toAccount": receiver,
-            "transferAmount": amount,
-            "transfer": "Transfer Money"
+        response = self.client.post(self.config["path"], data={
+            self.config["from_field"]: sender,
+            self.config["to_field"]: receiver,
+            self.config["amount_field"]: amount,
+            self.config["submit_field"]: self.config["submit_value"]
         })
         with self.lock:
             if response.status_code == 200:
@@ -22,8 +23,11 @@ class DoubleSpending():
             else:
                 self.results.append("FAIL")
 
-    def run(self, sender="800002", receiver="800003", amount="100", threads=10):
+    def run(self, threads=10):
         print(f"Starting Double Spending detection with {threads} concurrent threads...")
+        sender = self.config["sender"]
+        receiver = self.config["receiver"]
+        amount = self.config["amount"]
         self.results = []
         findings = []
 

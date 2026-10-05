@@ -58,11 +58,11 @@ def main():
         discovery.search()
 
     if args.sqli or args.all:
-        sqli = SQLInjection(args.target)
+        sqli = SQLInjection(args.target,profile["login"])
         all_findings += sqli.run()
 
     client = HttpClient(args.target)
-    auth = Auth(client, args.username, args.password)
+    auth = Auth(client, args.username, args.password,profile["login"])
     login_success = auth.login()
 
     if not login_success:
@@ -75,16 +75,16 @@ def main():
         all_findings += idor.run()
 
     if args.session or args.all:
-        session = SessionTesting(client, auth)
+        session = SessionTesting(client, auth, profile["session"])
         all_findings += session.run()
 
 
     if args.double_spending or args.all:
         print("\n[INFO] Re-authenticating for double spending test...")
         client = HttpClient(args.target)
-        auth = Auth(client, args.username, args.password)
+        auth = Auth(client, args.username, args.password,profile["login"])
         auth.login()
-        ds = DoubleSpending(client, auth)
+        ds = DoubleSpending(client, auth,profile["transfer"])
         all_findings += (
             ds.run())
     reporter = Reporter(all_findings)
